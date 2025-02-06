@@ -44,6 +44,8 @@
 // Linux.
 #if defined(__ANDROID__)
 static pid_t GetTid() { return gettid(); }
+#elif defined(__GNU__)
+// GNU/Hurd does not support gettid.
 #elif defined(__GLIBC__)
 // The glibc wrapper for the gettid() system call was added in glibc 2.30.
 // Emulate it for older versions of glibc.
