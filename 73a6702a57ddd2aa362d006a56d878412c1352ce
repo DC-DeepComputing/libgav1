@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7eeb1a4b_ec1d2b43",
+        "filename": "src/utils/threadpool.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2025-02-06T20:43:41Z",
+      "side": 1,
+      "message": "Thanks for the patch, I added one check (untested) in https://chromium-review.googlesource.com/c/codecs/libgav1/+/3847005. I assume `__GLIBC__` or another macro is defined and something in this block is failing to build?",
+      "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    }
+  ]
+}
