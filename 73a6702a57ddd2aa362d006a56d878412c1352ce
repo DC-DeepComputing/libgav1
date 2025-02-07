@@ -34,6 +34,24 @@
       "parentUuid": "7eeb1a4b_ec1d2b43",
       "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a9a391c4_a881999b",
+        "filename": "src/utils/threadpool.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 3857316
+      },
+      "writtenOn": "2025-02-07T10:31:49Z",
+      "side": 1,
+      "message": "Sorry. I totally misunderstood what you said. The compiling fails on Hurd, indeed. But abseil fails, too, so nobody has built libgav1 once and noticed the error before. I fixed abseil, built libgav1 and then found the compiling error.\nBoth Hurd and Linux use glibc, so both define __GLIBC__. However, gettid is not defined on Hurd, since it is specific to Linux and glibc manual explicitly tells this. __GNU__ is the platform detection macro for Hurd. We should use it to avoid gettid on Hurd.\nThanks!",
+      "parentUuid": "caeaec14_c4c0ce40",
+      "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
     }
   ]
 }
