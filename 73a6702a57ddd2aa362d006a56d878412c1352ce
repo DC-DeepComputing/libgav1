@@ -16,6 +16,24 @@
       "message": "Thanks for the patch, I added one check (untested) in https://chromium-review.googlesource.com/c/codecs/libgav1/+/3847005. I assume `__GLIBC__` or another macro is defined and something in this block is failing to build?",
       "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "caeaec14_c4c0ce40",
+        "filename": "src/utils/threadpool.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 3857316
+      },
+      "writtenOn": "2025-02-07T01:11:10Z",
+      "side": 1,
+      "message": "The CI seemed to fail with a CI server error. Looks like it works now.\nFor the testing problem, sorry that I forgot to paste its thread on GNU/Hurd Debian list after creating this patch. It\u0027s at https://lists.debian.org/debian-hurd/2025/02/msg00016.html. In summary, it succeeded to build as a Debian package. As one step of building, the unit tests run and passed. I also tested it manually with a real video and it worked, too.\nHowever, the package can not be pushed into Debian unreleased apt repo currently, because some debugging features of abseil are waited to check for porting possibility before the patches of it are pushed to upstream. As pointed in another thread of list, it does not affect other features of abeil and can be safely disabled like other platforms that do not support it. At the end, all of them will be tested again and pushed to Debian repo. If it encounters some additional bugs, I\u0027ll try to push new patches.\nI think this patch is trivial enough to merge if it does not affect current function on other platform. It will be convenient to merge this patch here, because then we don\u0027t have to do it in Debian package patching system and push the patch again here.\nThanks for helping on this patch. :)",
+      "parentUuid": "7eeb1a4b_ec1d2b43",
+      "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
     }
   ]
 }
