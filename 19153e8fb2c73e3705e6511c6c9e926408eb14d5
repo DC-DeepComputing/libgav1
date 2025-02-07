@@ -16,6 +16,24 @@
       "message": "Do we really need this comment given lines 43-44 say this is being defined for Linux?",
       "revId": "19153e8fb2c73e3705e6511c6c9e926408eb14d5",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f8e4f7d3_098a7b19",
+        "filename": "src/utils/threadpool.cc",
+        "patchSetId": 2
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 3857316
+      },
+      "writtenOn": "2025-02-07T14:27:13Z",
+      "side": 1,
+      "message": "Oh. Sorry. I didn\u0027t see that line. Will delete it now!",
+      "parentUuid": "596b26f8_bcbfa519",
+      "revId": "19153e8fb2c73e3705e6511c6c9e926408eb14d5",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
     }
   ]
 }
