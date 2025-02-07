@@ -52,6 +52,24 @@
       "parentUuid": "caeaec14_c4c0ce40",
       "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "09b84b27_a5f703e7",
+        "filename": "src/utils/threadpool.cc",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 3857316
+      },
+      "writtenOn": "2025-02-07T10:35:42Z",
+      "side": 1,
+      "message": "The problem is gettid is not even declared on Hurd, so using it will result in compiling error. I will enrich the commit message to address this later.",
+      "parentUuid": "a9a391c4_a881999b",
+      "revId": "73a6702a57ddd2aa362d006a56d878412c1352ce",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
     }
   ]
 }
