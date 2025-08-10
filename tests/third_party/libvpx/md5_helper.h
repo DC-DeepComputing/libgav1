@@ -21,11 +21,11 @@ class MD5 {
  public:
   MD5() { MD5Init(&md5_); }
 
-  void Add(const uint8_t *data, size_t size) {
+  void Add(const uint8_t* data, size_t size) {
     MD5Update(&md5_, data, static_cast<uint32_t>(size));
   }
 
-  const char *Get(void) {
+  const char* Get(void) {
     static const char hex[16] = {
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
