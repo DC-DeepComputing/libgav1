@@ -29,6 +29,8 @@
 #include <memory>
 #include <new>
 
+#include "src/utils/compiler_attributes.h"
+
 namespace libgav1 {
 
 enum {
@@ -180,31 +182,35 @@ struct MaxAlignedAllocable {
   static void* operator new[](size_t size) = delete;
 
   // Class-specific non-throwing allocation functions
-  static void* operator new(size_t size, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void* operator new(
+      size_t size, const std::nothrow_t& tag) noexcept {
     if (size > 0x40000000) return nullptr;
     return ::operator new(size, std::align_val_t(kMaxAlignment), tag);
   }
-  static void* operator new[](size_t size, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void* operator new[](
+      size_t size, const std::nothrow_t& tag) noexcept {
     if (size > 0x40000000) return nullptr;
     return ::operator new[](size, std::align_val_t(kMaxAlignment), tag);
   }
 
   // Class-specific deallocation functions.
-  static void operator delete(void* ptr) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete(void* ptr) noexcept {
     ::operator delete(ptr, std::align_val_t(kMaxAlignment));
   }
-  static void operator delete[](void* ptr) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete[](void* ptr) noexcept {
     ::operator delete[](ptr, std::align_val_t(kMaxAlignment));
   }
 
   // Only called if new (std::nothrow) is used and the constructor throws an
   // exception.
-  static void operator delete(void* ptr, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete(
+      void* ptr, const std::nothrow_t& tag) noexcept {
     ::operator delete(ptr, std::align_val_t(kMaxAlignment), tag);
   }
   // Only called if new[] (std::nothrow) is used and the constructor throws an
   // exception.
-  static void operator delete[](void* ptr, const std::nothrow_t& tag) noexcept {
+  static LIBGAV1_ALWAYS_INLINE void operator delete[](
+      void* ptr, const std::nothrow_t& tag) noexcept {
     ::operator delete[](ptr, std::align_val_t(kMaxAlignment), tag);
   }
 };
