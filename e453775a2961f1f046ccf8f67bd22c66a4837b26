@@ -16,6 +16,24 @@
       "message": "The same comment from tests/utils.h can be added here to document the use of always inline.",
       "revId": "e453775a2961f1f046ccf8f67bd22c66a4837b26",
       "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "850f7388_d131a79f",
+        "filename": "src/utils/memory.h",
+        "patchSetId": 1
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 1002174
+      },
+      "writtenOn": "2026-01-08T20:34:44Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "91f8cf73_3d65c4c9",
+      "revId": "e453775a2961f1f046ccf8f67bd22c66a4837b26",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
     }
   ]
 }
