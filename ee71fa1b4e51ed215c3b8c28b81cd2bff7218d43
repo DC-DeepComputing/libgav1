@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "01019f12_10a913bf",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1002219
+      },
+      "writtenOn": "2026-05-22T16:28:31Z",
+      "side": 1,
+      "message": "Thanks for the patch. I\u0027ll make a broader pass, though sadly some iwyu tools both don\u0027t catch this one (though they find others) and remove some necessary files, breaking the build.",
+      "revId": "ee71fa1b4e51ed215c3b8c28b81cd2bff7218d43",
+      "serverId": "3ce6091f-6c88-37e8-8c75-72f92ae8dfba"
+    }
+  ]
+}
