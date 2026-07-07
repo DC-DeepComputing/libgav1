@@ -24,15 +24,15 @@
 
 #include <cstring>
 
-static void byteSwap(UWORD32 *buf, unsigned words) {
-  md5byte *p;
+static void byteSwap(UWORD32* buf, unsigned words) {
+  md5byte* p;
 
   /* Only swap bytes for big endian machines */
   int i = 1;
 
-  if (*(char *)&i == 1) return;
+  if (*(char*)&i == 1) return;
 
-  p = (md5byte *)buf;
+  p = (md5byte*)buf;
 
   do {
     *buf++ = (UWORD32)((unsigned)p[3] << 8 | p[2]) << 16 |
@@ -45,7 +45,7 @@ static void byteSwap(UWORD32 *buf, unsigned words) {
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-void MD5Init(struct MD5Context *ctx) {
+void MD5Init(struct MD5Context* ctx) {
   ctx->buf[0] = 0x67452301;
   ctx->buf[1] = 0xefcdab89;
   ctx->buf[2] = 0x98badcfe;
@@ -59,7 +59,7 @@ void MD5Init(struct MD5Context *ctx) {
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-void MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len) {
+void MD5Update(struct MD5Context* ctx, md5byte const* buf, unsigned len) {
   UWORD32 t;
 
   /* Update byte count */
@@ -72,12 +72,12 @@ void MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len) {
   t = 64 - (t & 0x3f); /* Space available in ctx->in (at least 1) */
 
   if (t > len) {
-    memcpy((md5byte *)ctx->in + 64 - t, buf, len);
+    memcpy((md5byte*)ctx->in + 64 - t, buf, len);
     return;
   }
 
   /* First chunk is an odd size */
-  memcpy((md5byte *)ctx->in + 64 - t, buf, t);
+  memcpy((md5byte*)ctx->in + 64 - t, buf, t);
   byteSwap(ctx->in, 16);
   MD5Transform(ctx->buf, ctx->in);
   buf += t;
@@ -100,9 +100,9 @@ void MD5Update(struct MD5Context *ctx, md5byte const *buf, unsigned len) {
  * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-void MD5Final(md5byte digest[16], struct MD5Context *ctx) {
+void MD5Final(md5byte digest[16], struct MD5Context* ctx) {
   int count = ctx->bytes[0] & 0x3f; /* Number of bytes in ctx->in */
-  md5byte *p = (md5byte *)ctx->in + count;
+  md5byte* p = (md5byte*)ctx->in + count;
 
   /* Set the first char of padding to 0x80.  There is always room. */
   *p++ = 0x80;
@@ -114,7 +114,7 @@ void MD5Final(md5byte digest[16], struct MD5Context *ctx) {
     memset(p, 0, count + 8);
     byteSwap(ctx->in, 16);
     MD5Transform(ctx->buf, ctx->in);
-    p = (md5byte *)ctx->in;
+    p = (md5byte*)ctx->in;
     count = 56;
   }
 

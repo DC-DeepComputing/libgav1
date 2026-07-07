@@ -233,7 +233,7 @@ alignas(16) const uint8_t
         {0, 2, 5, 13, 125, 8, 2, 1},   {0, 1, 4, 11, 125, 7, 2, 0},
         {0, 1, 3, 8, 126, 6, 2, 0},    {0, 1, 3, 6, 127, 4, 1, 0},
         {0, 1, 2, 4, 127, 3, 1, 0},    {0, 0, 1, 2, 128, 1, 0, 0},
-};
+    };
 
 alignas(8) const int8_t
     kWarpedFilters8[3 * kWarpedPixelPrecisionShifts + 1][8] = {

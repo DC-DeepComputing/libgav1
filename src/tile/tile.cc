@@ -283,7 +283,7 @@ constexpr PredictionMode
         {kPredictionModeNewMv, kPredictionModeNearMv},
         {kPredictionModeGlobalMv, kPredictionModeGlobalMv},
         {kPredictionModeNewMv, kPredictionModeNewMv},
-};
+    };
 PredictionMode GetSinglePredictionMode(int index, PredictionMode y_mode) {
   if (y_mode < kPredictionModeNearestNearestMv) {
     return y_mode;
