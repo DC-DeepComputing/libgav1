@@ -70,7 +70,7 @@ alignas(16) const int8_t
         {0, -2, 5, -13, -125, 8, -2, 1},   {0, -1, 4, -11, -125, 7, -2, 0},
         {0, -1, 3, -8, -126, 6, -2, 0},    {0, -1, 3, -6, -127, 4, -1, 0},
         {0, -1, 2, -4, -127, 3, -1, 0},    {0, 0, 1, -2, -128, 1, 0, 0},
-};
+    };
 
 void SuperResCoefficients_SSE4_1(const int upscaled_width,
                                  const int initial_subpixel_x, const int step,
@@ -212,7 +212,7 @@ alignas(16) const int16_t
         {0, 2, -5, 13, 125, -8, 2, -1},    {0, 1, -4, 11, 125, -7, 2, 0},
         {0, 1, -3, 8, 126, -6, 2, 0},      {0, 1, -3, 6, 127, -4, 1, 0},
         {0, 1, -2, 4, 127, -3, 1, 0},      {0, 0, -1, 2, 128, -1, 0, 0},
-};
+    };
 
 void SuperResCoefficients_SSE4_1(const int upscaled_width,
                                  const int initial_subpixel_x, const int step,
