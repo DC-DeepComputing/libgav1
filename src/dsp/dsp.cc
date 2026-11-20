@@ -44,6 +44,7 @@ namespace libgav1 {
 namespace dsp {
 bool CpuHasRVV();
 void CdefInit_RVV();
+void InverseTransformInit_RVV();
 }  // namespace dsp
 }  // namespace libgav1
 #endif
@@ -179,6 +180,7 @@ void DspInit() {
 #if defined(__riscv) && defined(LIBGAV1_ENABLE_RVV)
     if (CpuHasRVV()) {
       CdefInit_RVV();
+      InverseTransformInit_RVV();
     }
 #endif  // __riscv
   });
