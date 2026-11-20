@@ -169,6 +169,31 @@ void ApplyRowRounding(int16_t* src, size_t n) {
   }
 }
 
+// Vectorized StoreToFrameWithRound for one frame row: residual =
+// (src+8)>>4 (arithmetic; range guaranteed by the transform like NEON
+// vrshr_n_s16), then frame + residual clamped to [0, 255].
+void StoreToFrameRow(const int16_t* src_row, uint8_t* dst, int width) {
+  size_t i = 0;
+  const size_t n = size_t(width);
+  while (i < n) {
+    const size_t vm = __riscv_vsetvl_e16m1(n - i);
+    vint16m1_t r = __riscv_vle16_v_i16m1(src_row + i, vm);
+    r = __riscv_vsra_vx_i16m1(__riscv_vadd_vx_i16m1(r, 8, vm), 4, vm);
+    const vuint8mf2_t fb = __riscv_vle8_v_u8mf2(dst + i, vm);
+    vint16m1_t sum = __riscv_vadd_vv_i16m1(
+        r, __riscv_vreinterpret_v_u16m1_i16m1(__riscv_vzext_vf2_u16m1(fb, vm)),
+        vm);
+    sum = __riscv_vmin_vx_i16m1(sum, 255, vm);
+    sum = __riscv_vmax_vx_i16m1(sum, 0, vm);
+    __riscv_vse8_v_u8mf2(
+        dst + i,
+        __riscv_vnclipu_wx_u8mf2(__riscv_vreinterpret_v_i16m1_u16m1(sum), 0,
+                                 __RISCV_VXRM_RDN, vm),
+        vm);
+    i += vm;
+  }
+}
+
 void Dct4Row(TransformType, TransformSize tx_size, int h, void* src_buffer,
              int, int, void*) {
   auto* src = static_cast<int16_t*>(src_buffer);
@@ -182,16 +207,16 @@ void Dct4Row(TransformType, TransformSize tx_size, int h, void* src_buffer,
   while (done < size_t(h)) {
     size_t vm = __riscv_vsetvl_e16m1(size_t(h) - done);
     int16_t* bp = src + done * 4;
-    const ptrdiff_t bs = 8;
-    vint16m1_t s0 = __riscv_vlse16_v_i16m1(bp, bs, vm);
-    vint16m1_t s1 = __riscv_vlse16_v_i16m1(bp + 1, bs, vm);
-    vint16m1_t s2 = __riscv_vlse16_v_i16m1(bp + 2, bs, vm);
-    vint16m1_t s3 = __riscv_vlse16_v_i16m1(bp + 3, bs, vm);
+    // Rows are structs of 4 contiguous int16 fields: vlseg4 deinterleaves the
+    // 4 columns in one instruction (replaces 4 strided loads).
+    vint16m1x4_t t = __riscv_vlseg4e16_v_i16m1x4(bp, vm);
+    vint16m1_t s0 = __riscv_vget_v_i16m1x4_i16m1(t, 0);
+    vint16m1_t s1 = __riscv_vget_v_i16m1x4_i16m1(t, 1);
+    vint16m1_t s2 = __riscv_vget_v_i16m1x4_i16m1(t, 2);
+    vint16m1_t s3 = __riscv_vget_v_i16m1x4_i16m1(t, 3);
     Dct4(s0, s1, s2, s3, vm);
-    __riscv_vsse16_v_i16m1(bp, bs, s0, vm);
-    __riscv_vsse16_v_i16m1(bp + 1, bs, s1, vm);
-    __riscv_vsse16_v_i16m1(bp + 2, bs, s2, vm);
-    __riscv_vsse16_v_i16m1(bp + 3, bs, s3, vm);
+    __riscv_vsseg4e16_v_i16m1x4(
+        bp, __riscv_vcreate_v_i16m1x4(s0, s1, s2, s3), vm);
     done += vm;
   }
   if (row_shift > 0) RoundShiftRight(src, size_t(h) * 4, row_shift);
@@ -209,24 +234,18 @@ void Dct8Row(TransformType, TransformSize tx_size, int h, void* src_buffer,
   while (done < size_t(h)) {
     size_t vm = __riscv_vsetvl_e16m1(size_t(h) - done);
     int16_t* bp = src + done * 8;
-    const ptrdiff_t bs = 16;  // 8 int16 elements per row
-    vint16m1_t s0 = __riscv_vlse16_v_i16m1(bp, bs, vm);
-    vint16m1_t s1 = __riscv_vlse16_v_i16m1(bp + 1, bs, vm);
-    vint16m1_t s2 = __riscv_vlse16_v_i16m1(bp + 2, bs, vm);
-    vint16m1_t s3 = __riscv_vlse16_v_i16m1(bp + 3, bs, vm);
-    vint16m1_t s4 = __riscv_vlse16_v_i16m1(bp + 4, bs, vm);
-    vint16m1_t s5 = __riscv_vlse16_v_i16m1(bp + 5, bs, vm);
-    vint16m1_t s6 = __riscv_vlse16_v_i16m1(bp + 6, bs, vm);
-    vint16m1_t s7 = __riscv_vlse16_v_i16m1(bp + 7, bs, vm);
+    vint16m1x8_t t = __riscv_vlseg8e16_v_i16m1x8(bp, vm);
+    vint16m1_t s0 = __riscv_vget_v_i16m1x8_i16m1(t, 0);
+    vint16m1_t s1 = __riscv_vget_v_i16m1x8_i16m1(t, 1);
+    vint16m1_t s2 = __riscv_vget_v_i16m1x8_i16m1(t, 2);
+    vint16m1_t s3 = __riscv_vget_v_i16m1x8_i16m1(t, 3);
+    vint16m1_t s4 = __riscv_vget_v_i16m1x8_i16m1(t, 4);
+    vint16m1_t s5 = __riscv_vget_v_i16m1x8_i16m1(t, 5);
+    vint16m1_t s6 = __riscv_vget_v_i16m1x8_i16m1(t, 6);
+    vint16m1_t s7 = __riscv_vget_v_i16m1x8_i16m1(t, 7);
     Dct8(s0, s1, s2, s3, s4, s5, s6, s7, vm);
-    __riscv_vsse16_v_i16m1(bp, bs, s0, vm);
-    __riscv_vsse16_v_i16m1(bp + 1, bs, s1, vm);
-    __riscv_vsse16_v_i16m1(bp + 2, bs, s2, vm);
-    __riscv_vsse16_v_i16m1(bp + 3, bs, s3, vm);
-    __riscv_vsse16_v_i16m1(bp + 4, bs, s4, vm);
-    __riscv_vsse16_v_i16m1(bp + 5, bs, s5, vm);
-    __riscv_vsse16_v_i16m1(bp + 6, bs, s6, vm);
-    __riscv_vsse16_v_i16m1(bp + 7, bs, s7, vm);
+    __riscv_vsseg8e16_v_i16m1x8(
+        bp, __riscv_vcreate_v_i16m1x8(s0, s1, s2, s3, s4, s5, s6, s7), vm);
     done += vm;
   }
   if (row_shift > 0) RoundShiftRight(src, size_t(h) * 8, row_shift);
@@ -267,13 +286,7 @@ void Dct4Column(TransformType tx_type, TransformSize tx_size, int h,
   // slots are only invoked for tx types whose column transform is DCT, and
   // none of them are in kTransformFlipRowsMask, so rows are never flipped.
   for (int i = 0; i < tx_height; ++i) {
-    const int row = i * tx_width;
-    uint8_t* dst = frame[start_y + i] + start_x;
-    for (int j = 0; j < tx_width; ++j) {
-      const int a = (int(src[row + j]) + 8) >> 4;
-      const int v = int(dst[j]) + a;
-      dst[j] = (uint8_t)std::max(0, std::min(255, v));
-    }
+    StoreToFrameRow(src + i * tx_width, frame[start_y + i] + start_x, tx_width);
   }
 }
 
@@ -317,13 +330,7 @@ void Dct8Column(TransformType tx_type, TransformSize tx_size, int h,
   auto& frame = *static_cast<Array2DView<uint8_t>*>(dst_frame);
   // See Dct4Column: DCT column slots never flip rows.
   for (int i = 0; i < tx_height; ++i) {
-    const int row = i * tx_width;
-    uint8_t* dst = frame[start_y + i] + start_x;
-    for (int j = 0; j < tx_width; ++j) {
-      const int a = (int(src[row + j]) + 8) >> 4;
-      const int v = int(dst[j]) + a;
-      dst[j] = (uint8_t)std::max(0, std::min(255, v));
-    }
+    StoreToFrameRow(src + i * tx_width, frame[start_y + i] + start_x, tx_width);
   }
 }
 
@@ -501,16 +508,14 @@ void Adst4Row(TransformType, TransformSize tx_size, int h, void* src_buffer,
   while (done < size_t(h)) {
     size_t vm = __riscv_vsetvl_e16m1(size_t(h) - done);
     int16_t* bp = src + done * 4;
-    const ptrdiff_t bs = 8;
-    vint16m1_t x0 = __riscv_vlse16_v_i16m1(bp, bs, vm);
-    vint16m1_t x1 = __riscv_vlse16_v_i16m1(bp + 1, bs, vm);
-    vint16m1_t x2 = __riscv_vlse16_v_i16m1(bp + 2, bs, vm);
-    vint16m1_t x3 = __riscv_vlse16_v_i16m1(bp + 3, bs, vm);
+    vint16m1x4_t t = __riscv_vlseg4e16_v_i16m1x4(bp, vm);
+    vint16m1_t x0 = __riscv_vget_v_i16m1x4_i16m1(t, 0);
+    vint16m1_t x1 = __riscv_vget_v_i16m1x4_i16m1(t, 1);
+    vint16m1_t x2 = __riscv_vget_v_i16m1x4_i16m1(t, 2);
+    vint16m1_t x3 = __riscv_vget_v_i16m1x4_i16m1(t, 3);
     Adst4(x0, x1, x2, x3, vm);
-    __riscv_vsse16_v_i16m1(bp, bs, x0, vm);
-    __riscv_vsse16_v_i16m1(bp + 1, bs, x1, vm);
-    __riscv_vsse16_v_i16m1(bp + 2, bs, x2, vm);
-    __riscv_vsse16_v_i16m1(bp + 3, bs, x3, vm);
+    __riscv_vsseg4e16_v_i16m1x4(
+        bp, __riscv_vcreate_v_i16m1x4(x0, x1, x2, x3), vm);
     done += vm;
   }
   if (row_shift > 0) RoundShiftRight(src, size_t(h) * 4, row_shift);
@@ -556,12 +561,7 @@ void Adst4Column(TransformType tx_type, TransformSize tx_size, int h,
   const bool flip_rows = kTransformFlipRowsMask.Contains(tx_type);
   for (int i = 0; i < tx_height; ++i) {
     const int row = (flip_rows ? (tx_height - i - 1) : i) * tx_width;
-    uint8_t* dst = frame[start_y + i] + start_x;
-    for (int j = 0; j < tx_width; ++j) {
-      const int a = (int(src[row + j]) + 8) >> 4;
-      const int v = int(dst[j]) + a;
-      dst[j] = (uint8_t)std::max(0, std::min(255, v));
-    }
+    StoreToFrameRow(src + row, frame[start_y + i] + start_x, tx_width);
   }
 }
 
@@ -578,30 +578,24 @@ void Adst8Row(TransformType, TransformSize tx_size, int h, void* src_buffer,
     return;
   }
   if (should_round) ApplyRowRounding(src, size_t(h) * tx_width);
-  // Input permutation [x7,x0,x5,x2,x3,x4,x1,x6] folded into the load order.
-  static const int kIn[8] = {7, 0, 5, 2, 3, 4, 1, 6};
+  // Input permutation [x7,x0,x5,x2,x3,x4,x1,x6] applied to the vlseg8 fields
+  // (vget requires compile-time indices).
   size_t done = 0;
   while (done < size_t(h)) {
     size_t vm = __riscv_vsetvl_e16m1(size_t(h) - done);
     int16_t* bp = src + done * 8;
-    const ptrdiff_t bs = 16;
-    vint16m1_t s0 = __riscv_vlse16_v_i16m1(bp + kIn[0], bs, vm);
-    vint16m1_t s1 = __riscv_vlse16_v_i16m1(bp + kIn[1], bs, vm);
-    vint16m1_t s2 = __riscv_vlse16_v_i16m1(bp + kIn[2], bs, vm);
-    vint16m1_t s3 = __riscv_vlse16_v_i16m1(bp + kIn[3], bs, vm);
-    vint16m1_t s4 = __riscv_vlse16_v_i16m1(bp + kIn[4], bs, vm);
-    vint16m1_t s5 = __riscv_vlse16_v_i16m1(bp + kIn[5], bs, vm);
-    vint16m1_t s6 = __riscv_vlse16_v_i16m1(bp + kIn[6], bs, vm);
-    vint16m1_t s7 = __riscv_vlse16_v_i16m1(bp + kIn[7], bs, vm);
+    vint16m1x8_t t = __riscv_vlseg8e16_v_i16m1x8(bp, vm);
+    vint16m1_t s0 = __riscv_vget_v_i16m1x8_i16m1(t, 7);
+    vint16m1_t s1 = __riscv_vget_v_i16m1x8_i16m1(t, 0);
+    vint16m1_t s2 = __riscv_vget_v_i16m1x8_i16m1(t, 5);
+    vint16m1_t s3 = __riscv_vget_v_i16m1x8_i16m1(t, 2);
+    vint16m1_t s4 = __riscv_vget_v_i16m1x8_i16m1(t, 3);
+    vint16m1_t s5 = __riscv_vget_v_i16m1x8_i16m1(t, 4);
+    vint16m1_t s6 = __riscv_vget_v_i16m1x8_i16m1(t, 1);
+    vint16m1_t s7 = __riscv_vget_v_i16m1x8_i16m1(t, 6);
     Adst8(s0, s1, s2, s3, s4, s5, s6, s7, vm);
-    __riscv_vsse16_v_i16m1(bp, bs, s0, vm);
-    __riscv_vsse16_v_i16m1(bp + 1, bs, s1, vm);
-    __riscv_vsse16_v_i16m1(bp + 2, bs, s2, vm);
-    __riscv_vsse16_v_i16m1(bp + 3, bs, s3, vm);
-    __riscv_vsse16_v_i16m1(bp + 4, bs, s4, vm);
-    __riscv_vsse16_v_i16m1(bp + 5, bs, s5, vm);
-    __riscv_vsse16_v_i16m1(bp + 6, bs, s6, vm);
-    __riscv_vsse16_v_i16m1(bp + 7, bs, s7, vm);
+    __riscv_vsseg8e16_v_i16m1x8(
+        bp, __riscv_vcreate_v_i16m1x8(s0, s1, s2, s3, s4, s5, s6, s7), vm);
     done += vm;
   }
   if (row_shift > 0) RoundShiftRight(src, size_t(h) * 8, row_shift);
@@ -654,12 +648,7 @@ void Adst8Column(TransformType tx_type, TransformSize tx_size, int h,
   const bool flip_rows = kTransformFlipRowsMask.Contains(tx_type);
   for (int i = 0; i < tx_height; ++i) {
     const int row = (flip_rows ? (tx_height - i - 1) : i) * tx_width;
-    uint8_t* dst = frame[start_y + i] + start_x;
-    for (int j = 0; j < tx_width; ++j) {
-      const int a = (int(src[row + j]) + 8) >> 4;
-      const int v = int(dst[j]) + a;
-      dst[j] = (uint8_t)std::max(0, std::min(255, v));
-    }
+    StoreToFrameRow(src + row, frame[start_y + i] + start_x, tx_width);
   }
 }
 
