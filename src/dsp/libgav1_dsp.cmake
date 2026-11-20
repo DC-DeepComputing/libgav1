@@ -202,3 +202,10 @@ macro(libgav1_add_dsp_targets)
                       INCLUDES
                       ${libgav1_include_paths})
 endmacro()
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
+  list(APPEND libgav1_dsp_sources "${libgav1_source}/dsp/riscv/cdef_rvv.cc")
+  set_source_files_properties("${libgav1_source}/dsp/riscv/cdef_rvv.cc"
+                              PROPERTIES COMPILE_OPTIONS
+                                         "-march=rv64gcv;-fno-tree-vectorize")
+endif()

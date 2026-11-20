@@ -43,6 +43,12 @@ macro(libgav1_optimization_detect)
     set(libgav1_have_neon, OFF)
   endif()
 
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64" AND LIBGAV1_ENABLE_RVV)
+    list(APPEND libgav1_defines "LIBGAV1_ENABLE_RVV=1")
+  else()
+    list(APPEND libgav1_defines "LIBGAV1_ENABLE_RVV=0")
+  endif()
+
   if(libgav1_have_sse4 AND LIBGAV1_ENABLE_SSE4_1)
     list(APPEND libgav1_defines "LIBGAV1_ENABLE_SSE4_1=1")
   else()

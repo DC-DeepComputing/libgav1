@@ -39,6 +39,14 @@
 #include "src/dsp/warp.h"
 #include "src/dsp/weight_mask.h"
 #include "src/utils/cpu.h"
+#if defined(__riscv) && defined(LIBGAV1_ENABLE_RVV)
+namespace libgav1 {
+namespace dsp {
+bool CpuHasRVV();
+void CdefInit_RVV();
+}  // namespace dsp
+}  // namespace libgav1
+#endif
 
 namespace libgav1 {
 namespace dsp_internal {
@@ -168,6 +176,11 @@ void DspInit() {
     LoopRestorationInit10bpp_NEON();
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 #endif  // LIBGAV1_ENABLE_NEON
+#if defined(__riscv) && defined(LIBGAV1_ENABLE_RVV)
+    if (CpuHasRVV()) {
+      CdefInit_RVV();
+    }
+#endif  // __riscv
   });
 }
 

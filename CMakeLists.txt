@@ -47,6 +47,8 @@ libgav1_option(NAME LIBGAV1_ENABLE_NEON HELPSTRING "Enables neon optimizations."
                VALUE ON)
 libgav1_option(NAME LIBGAV1_ENABLE_SSE4_1 HELPSTRING
                "Enables sse4.1 optimizations." VALUE ON)
+libgav1_option(NAME LIBGAV1_ENABLE_RVV HELPSTRING
+               "Enables rvv optimizations." VALUE ON)
 libgav1_option(NAME LIBGAV1_ENABLE_EXAMPLES HELPSTRING "Enables examples." VALUE
                ON)
 libgav1_option(NAME LIBGAV1_ENABLE_TESTS HELPSTRING "Enables tests." VALUE ON)
@@ -166,4 +168,11 @@ if(LIBGAV1_VERBOSE)
   libgav1_dump_cmake_flag_variables()
   libgav1_dump_tracked_configuration_variables()
   libgav1_dump_options()
+endif()
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64" AND TARGET libgav1_dsp_rvv)
+  set_property(TARGET libgav1_static APPEND PROPERTY OBJLIB_DEPS libgav1_dsp_rvv)
+  if(TARGET libgav1_shared)
+    set_property(TARGET libgav1_shared APPEND PROPERTY OBJLIB_DEPS libgav1_dsp_rvv)
+  endif()
 endif()
