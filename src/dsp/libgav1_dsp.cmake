@@ -212,4 +212,8 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "riscv64")
   set_source_files_properties(
     "${libgav1_source}/dsp/riscv/inverse_transform_rvv.cc"
     PROPERTIES COMPILE_OPTIONS "-march=rv64gcv;-fno-tree-vectorize")
+  list(APPEND libgav1_dsp_sources "${libgav1_source}/dsp/riscv/intrapred_filter_rvv.cc")
+  set_source_files_properties(
+    "${libgav1_source}/dsp/riscv/intrapred_filter_rvv.cc"
+    PROPERTIES COMPILE_OPTIONS "-march=rv64gcv;-fno-tree-vectorize")
 endif()

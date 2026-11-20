@@ -45,6 +45,7 @@ namespace dsp {
 bool CpuHasRVV();
 void CdefInit_RVV();
 void InverseTransformInit_RVV();
+void FilterIntraInit_RVV();
 }  // namespace dsp
 }  // namespace libgav1
 #endif
@@ -181,6 +182,7 @@ void DspInit() {
     if (CpuHasRVV()) {
       CdefInit_RVV();
       InverseTransformInit_RVV();
+      FilterIntraInit_RVV();
     }
 #endif  // __riscv
   });
